@@ -17,5 +17,4 @@ urlpatterns = [
     path('addproductimage/', AddProductImage.as_view(), name='addproductimage'),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogOutView.as_view(), name='logout'),
-    path('productlist/', ProductListAPI.as_view(), name='productlist'),
 ]

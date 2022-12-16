@@ -58,17 +58,7 @@ class ProductRUDViewSet(viewsets.ModelViewSet):
     serializer_class = ProductRUDSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = Product.objects.all()
-
-
-class ProductListAPI(generics.ListAPIView):
-    serializer_class = ProductRUDSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    queryset = Product.objects.all()
-
-    def get_queryset(self):
-        if self.request.user:
-            qs = Product.objects.all()
-        return qs
+    
 
 
 class AddProductImage(generics.CreateAPIView):
