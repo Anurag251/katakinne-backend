@@ -1,9 +1,10 @@
 from django.db import models
 
 Type_Choice = (
-    ("Offer","Offer"),
-    ("Feature","Feature")
+    ("Offer", "Offer"),
+    ("Feature", "Feature")
 )
+
 
 class Slider(models.Model):
     title = models.CharField(max_length=300)
@@ -14,6 +15,7 @@ class Slider(models.Model):
     def __str__(self):
         return str(self.title)
 
+
 class Category(models.Model):
     name = models.CharField(max_length=300)
     image = models.ImageField(upload_to='category/')
@@ -22,8 +24,10 @@ class Category(models.Model):
     def __str__(self):
         return str(self.name)
 
+
 class Product(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category')
+    category = models.ForeignKey(
+        Category, on_delete=models.CASCADE, related_name='category')
     name = models.CharField(max_length=300)
     image = models.ImageField(upload_to='product/', blank=True, null=True)
     tag = models.CharField(max_length=255, blank=True, null=True)
@@ -37,8 +41,10 @@ class Product(models.Model):
     def __str__(self):
         return str(self.name)
 
+
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='productimage')
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name='productimage')
     image = models.ImageField(upload_to='productimage/')
 
 # Create your models here.

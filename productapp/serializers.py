@@ -1,6 +1,7 @@
 from dataclasses import fields
 from .models import *
 from rest_framework import serializers
+from django.contrib.auth.models import User
 
 
 class SliderSerializer(serializers.ModelSerializer):
@@ -91,3 +92,27 @@ class ImageProduct(serializers.ModelSerializer):
         model = ProductImage
         fields = '__all__'
         depth = 1
+
+
+class CategoryAddSerializer(serializers.ModelSerializer):
+    name = serializers.CharField()
+    image = serializers.ImageField()
+    link = serializers.CharField(required=False)
+
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = '__all__'
+        excludes = ['password']
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField()

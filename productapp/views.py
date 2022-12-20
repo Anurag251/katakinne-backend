@@ -11,6 +11,9 @@ from .serializers import *
 from datetime import datetime, timedelta
 from rest_framework.views import APIView
 from django.db.models import CharField, Value, IntegerField, Q
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import get_user_model
+User = get_user_model()
 # Create your views here.
 
 
@@ -53,19 +56,19 @@ class ProductView(generics.ListAPIView):
 
 class ProductRUDViewSet(viewsets.ModelViewSet):
     serializer_class = ProductRUDSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Product.objects.all()
 
 
 class AddProductImage(generics.CreateAPIView):
     serializer_class = ImageofProductSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = ProductImage.objects.all()
 
     def post(self, request):
+        print(self.request.user)
         serializer = self.serializer_class(data=request.data)
         data = request.data
-        print(data.get('product'))
         serializer.is_valid(raise_exception=True)
         if Product.objects.filter(id=data.get('product')).exists():
             product_item = Product.objects.get(id=data.get('product'))
@@ -79,5 +82,62 @@ class AddProductImage(generics.CreateAPIView):
 
 class ProductImageRUDViewSet(viewsets.ModelViewSet):
     serializer_class = ImageProduct
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = ProductImage.objects.all()
+
+
+class CategoryRUDViewSet(viewsets.ModelViewSet):
+    serializer_class = CategoryAddSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Category.objects.all()
+
+
+class LoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = LoginSerializer
+
+    def post(self, request, format=None):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = request.data
+        username = data.get('username', None)
+        password = data.get('password', None)
+        user = User.objects.get(username=username)
+        if user is None:
+            raise AuthenticationFailed('User not found!')
+
+        if not user.check_password(password):
+            raise AuthenticationFailed('Wrong password!')
+
+        refresh = RefreshToken.for_user(user)
+        token = str(refresh.access_token)
+        rtoken = str(refresh)
+        # token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
+        response = Response()
+        response.set_cookie(key='jwt', value=token, httponly=True)
+        response.data = {
+            'userfield': username,
+            'token': token,
+            'refresh_token': rtoken,
+        }
+        return response
+
+
+class LogOutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = LogoutSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            refresh_token = request.data["refresh_token"]
+            print(refresh_token)
+            token = RefreshToken(refresh_token)
+            print(token)
+
+            token.blacklist()
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
